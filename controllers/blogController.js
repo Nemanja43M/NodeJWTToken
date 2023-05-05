@@ -6,9 +6,22 @@ exports.getAllBlogs = async (req, res) => {
     const exludedField = ["sort", "page"];
     exludedField.forEach((el) => delete queryObj[el]);
 
-    const query = Blog.find(queryObj);
+    let query = Blog.find(queryObj);
+
+    const page = req.query.page * 1 || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numBlogs = await Blog.countDocuments();
+      console.log(numBlogs);
+      if (skip >= numBlogs) throw new Error("This page does not exists");
+    }
 
     const allBlogs = await query;
+
     res.status(200).json({
       status: "success",
       results: allBlogs.length,
