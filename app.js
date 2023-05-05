@@ -1,7 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
-
+const morgan = require("morgan");
 const app = express();
+app.use(express.json());
+
+app.use(morgan("dev"));
+
+const blogRoutes = require("./routes/blogRoutes");
+const usersRoutes = require("./routes/userRoutes");
+
+app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/blogs", blogRoutes);
 
 mongoose
   .connect("mongodb://localhost:27017/blogs", {
@@ -13,9 +22,7 @@ mongoose
   })
   .then(() => console.log("Connected to the DB"));
 
-app.get("/api/v1/blogs", (req, res) => {});
-
-const port = process.env.PORT || 3000;
+const port = 3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
