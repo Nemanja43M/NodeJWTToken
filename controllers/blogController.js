@@ -2,7 +2,13 @@ const Blog = require("./../models/blogModel");
 
 exports.getAllBlogs = async (req, res) => {
   try {
-    const allBlogs = await Blog.find();
+    const queryObj = { ...req.query };
+    const exludedField = ["sort", "page"];
+    exludedField.forEach((el) => delete queryObj[el]);
+
+    const query = Blog.find(queryObj);
+
+    const allBlogs = await query;
     res.status(200).json({
       status: "success",
       results: allBlogs.length,
