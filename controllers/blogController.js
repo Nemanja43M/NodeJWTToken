@@ -1,24 +1,43 @@
 const Blog = require("./../models/blogModel");
 
+exports.getBlogGroup = async (req, res) => {
+  try {
+    const stats = await Blog.aggregate([
+      {
+        $group: {
+          _id: "$group",
+          totalBlog: { $sum: 1 },
+          numRatings: { $sum: "$likes" },
+        },
+      },
+    ]);
+    res.status(200).json({
+      status: "success",
+      data: {
+        stats,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err,
+    });
+  }
+};
+
 exports.getAllBlogs = async (req, res) => {
   try {
     const queryObj = { ...req.query };
-    const exludedField = ["sort", "page"];
+    const exludedField = ["page", "limit"];
     exludedField.forEach((el) => delete queryObj[el]);
 
     let query = Blog.find(queryObj);
 
     const page = req.query.page * 1 || 1;
-    const limit = 10;
+    const limit = req.query.limit * 1 || 100;
     const skip = (page - 1) * limit;
 
     query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numBlogs = await Blog.countDocuments();
-      console.log(numBlogs);
-      if (skip >= numBlogs) throw new Error("This page does not exists");
-    }
 
     const allBlogs = await query;
 

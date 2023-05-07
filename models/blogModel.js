@@ -12,6 +12,7 @@ const blogSchema = new mongoose.Schema({
   body: {
     type: String,
     required: [true, "A blog must have a text"],
+    trim: true,
   },
   date: {
     type: Date,
@@ -21,7 +22,15 @@ const blogSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  group: {
+    type: String,
+    enum: {
+      values: ["Regular", "Important"],
+      message: "Role is either: Regular or Important",
+    },
+  },
 });
+
 const Blog = mongoose.model("Blog", blogSchema);
 
 module.exports = Blog;
