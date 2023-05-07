@@ -1,129 +1,100 @@
 const Blog = require("./../models/blogModel");
+const catchGlobalError = require("../utils/catchGlobalError");
+const AppError = require("../utils/appError");
 
-exports.getBlogGroup = async (req, res) => {
-  try {
-    const stats = await Blog.aggregate([
-      {
-        $group: {
-          _id: "$group",
-          totalBlog: { $sum: 1 },
-          numRatings: { $sum: "$likes" },
-        },
+exports.getBlogGroup = catchGlobalError(async (req, res, next) => {
+  const stats = await Blog.aggregate([
+    {
+      $group: {
+        _id: "$group",
+        totalBlog: { $sum: 1 },
+        numRatings: { $sum: "$likes" },
       },
-    ]);
-    res.status(200).json({
-      status: "success",
-      data: {
-        stats,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+    },
+  ]);
+  res.status(200).json({
+    status: "success",
+    data: {
+      stats,
+    },
+  });
+});
+
+exports.getAllBlogs = catchGlobalError(async (req, res, next) => {
+  const queryObj = { ...req.query };
+  const exludedField = ["page", "limit"];
+  exludedField.forEach((el) => delete queryObj[el]);
+
+  let query = Blog.find(queryObj);
+
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 100;
+  const skip = (page - 1) * limit;
+
+  query = query.skip(skip).limit(limit);
+
+  const allBlogs = await query;
+
+  res.status(200).json({
+    status: "success",
+    results: allBlogs.length,
+    data: {
+      allBlogs,
+    },
+  });
+});
+
+exports.getBlog = catchGlobalError(async (req, res, next) => {
+  const blog = await Blog.findById(req.params.id);
+
+  if (!blog) {
+    return next(new AppError("No tour find with that ID", 404));
   }
-};
 
-exports.getAllBlogs = async (req, res) => {
-  try {
-    const queryObj = { ...req.query };
-    const exludedField = ["page", "limit"];
-    exludedField.forEach((el) => delete queryObj[el]);
+  res.status(200).json({
+    status: "success",
+    data: {
+      blog,
+    },
+  });
+});
+exports.createBlog = catchGlobalError(async (req, res, next) => {
+  const newBlog = await Blog.create(req.body);
 
-    let query = Blog.find(queryObj);
+  res.status(201).json({
+    status: "success",
+    data: {
+      newBlog: newBlog,
+    },
+  });
+});
 
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-    const skip = (page - 1) * limit;
+exports.updateBlog = catchGlobalError(async (req, res, next) => {
+  const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
 
-    query = query.skip(skip).limit(limit);
-
-    const allBlogs = await query;
-
-    res.status(200).json({
-      status: "success",
-      results: allBlogs.length,
-      data: {
-        allBlogs,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+  if (!updatedBlog) {
+    return next(new AppError("No tour find with that ID", 404));
   }
-};
 
-exports.getBlog = async (req, res) => {
-  try {
-    const blog = await Blog.findById(req.params.id);
+  res.status(200).json({
+    status: "success",
+    data: {
+      updatedBlog,
+    },
+  });
+});
+exports.deleteBlog = catchGlobalError(async (req, res, next) => {
+  const blog = await Blog.findByIdAndDelete(req.params.id);
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        blog,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+  if (!blog) {
+    return next(new AppError("No tour find with that ID", 404));
   }
-};
-exports.createBlog = async (req, res) => {
-  try {
-    console.log(req.body);
-    const newBlog = await Blog.create(req.body);
 
-    res.status(201).json({
-      status: "success",
-      data: {
-        newBlog: newBlog,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
-
-exports.updateBlog = async (req, res) => {
-  try {
-    const updatedBlog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        updatedBlog,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
-exports.deleteBlog = async (req, res) => {
-  try {
-    await Blog.findByIdAndDelete(req.params.id);
-
-    res.status(204).json({
-      status: "success",
-      data: null,
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
+  res.status(204).json({
+    status: "success",
+    data: null,
+  });
+});
