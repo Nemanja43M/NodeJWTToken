@@ -1,7 +1,7 @@
 {
   "name": "yettel",
   "version": "1.0.0",
-  "description": "",
+  "description": "task",
   "main": "app.js",
   "scripts": {
     "start": "nodemon server.js",

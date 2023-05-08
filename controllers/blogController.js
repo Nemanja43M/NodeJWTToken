@@ -48,7 +48,7 @@ exports.getBlog = catchGlobalError(async (req, res, next) => {
   const blog = await Blog.findById(req.params.id);
 
   if (!blog) {
-    return next(new AppError("No tour find with that ID", 404));
+    return next(new AppError("No Blog find with that ID", 404));
   }
 
   res.status(200).json({
@@ -76,7 +76,7 @@ exports.updateBlog = catchGlobalError(async (req, res, next) => {
   });
 
   if (!updatedBlog) {
-    return next(new AppError("No tour find with that ID", 404));
+    return next(new AppError("No Blog find with that ID", 404));
   }
 
   res.status(200).json({
@@ -90,11 +90,29 @@ exports.deleteBlog = catchGlobalError(async (req, res, next) => {
   const blog = await Blog.findByIdAndDelete(req.params.id);
 
   if (!blog) {
-    return next(new AppError("No tour find with that ID", 404));
+    return next(new AppError("No Blog find with that ID", 404));
   }
 
   res.status(204).json({
     status: "success",
     data: null,
+  });
+});
+
+exports.likeBlog = catchGlobalError(async (req, res, next) => {
+  const blog = await Blog.findById(req.params.id);
+
+  if (!blog) {
+    return next(new AppError("No Blog find with that ID", 404));
+  }
+
+  blog.likes++;
+  console.log(blog);
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      blog: blog,
+    },
   });
 });

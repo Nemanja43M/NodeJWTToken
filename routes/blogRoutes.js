@@ -6,6 +6,14 @@ const authController = require("./../controllers/authController");
 router.route("/blog-group").get(blogController.getBlogGroup);
 
 router
+  .route("/:id/like")
+  .post(
+    authController.protect,
+    authController.restrictTo("Guest"),
+    blogController.likeBlog
+  );
+
+router
   .route("/")
   .get(
     authController.protect,
