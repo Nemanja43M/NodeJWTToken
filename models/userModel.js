@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   },
   lastname: {
     type: String,
-    required: [true, "A user must have lastname"],
+    required: [true, "A user must have a lastname"],
     trim: true,
   },
   username: {
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please provide a valid email"],
     unique: true,
     lowercase: true,
-    validate: [validator.isEmail, "please provide a valid email"],
+    validate: [validator.isEmail, "Please provide a valid email"],
   },
   role: {
     type: String,

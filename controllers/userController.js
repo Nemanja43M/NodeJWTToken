@@ -1,91 +1,72 @@
 const User = require("../models/userModel");
+const catchGlobalError = require("../utils/catchGlobalError");
+const AppError = require("../utils/appError");
 
-exports.getAllUsers = async (req, res) => {
-  try {
-    const allUsers = await User.find();
-    res.status(200).json({
-      status: "success",
-      results: allUsers.length,
-      data: {
-        data: allUsers,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+exports.getAllUsers = catchGlobalError(async (req, res, next) => {
+  const allUsers = await User.find();
+
+  res.status(200).json({
+    status: "success",
+    results: allUsers.length,
+    data: {
+      data: allUsers,
+    },
+  });
+});
+
+exports.getUser = catchGlobalError(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return next(new AppError("No user find with that ID", 404));
   }
-};
 
-exports.getUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
+  res.status(200).json({
+    status: "success",
+    data: {
+      user,
+    },
+  });
+});
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+exports.createUser = catchGlobalError(async (req, res, next) => {
+  console.log(req.body);
+  const newUser = await User.create(req.body);
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      newUser,
+    },
+  });
+});
+
+exports.updateUser = catchGlobalError(async (req, res, next) => {
+  const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!updatedUser) {
+    return next(new AppError("No user find with that ID", 404));
   }
-};
-exports.createUser = async (req, res) => {
-  try {
-    console.log(req.body);
-    const newUser = await User.create(req.body);
 
-    res.status(201).json({
-      status: "success",
-      data: {
-        newUser,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
+  res.status(200).json({
+    status: "success",
+    data: {
+      updatedUser,
+    },
+  });
+});
+exports.deleteUser = catchGlobalError(async (req, res, next) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+
+  if (!user) {
+    return next(new AppError("No user find with that ID", 404));
   }
-};
 
-exports.updateUser = async (req, res) => {
-  try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        updatedUser,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
-exports.deleteUser = async (req, res) => {
-  try {
-    await User.findByIdAndDelete(req.params.id);
-
-    res.status(204).json({
-      status: "success",
-      data: null,
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err,
-    });
-  }
-};
+  res.status(204).json({
+    status: "success",
+    data: null,
+  });
+});

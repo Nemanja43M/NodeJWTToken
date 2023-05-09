@@ -9,7 +9,7 @@ mongoose
     useUnifiedTopology: true,
     retryWrites: false,
   })
-  .then(() => console.log("Connected to the DB"));
+  .then(() => console.log("Conected to the DB"));
 
 const port = 3000;
 app.listen(port, () => {

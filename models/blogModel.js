@@ -26,8 +26,8 @@ const blogSchema = new mongoose.Schema({
     type: String,
     enum: {
       values: ["Regular", "Important"],
-      message: "Role is either: Regular or Important",
     },
+    required: [true, "Group is either: Regular or Important"],
   },
 });
 
